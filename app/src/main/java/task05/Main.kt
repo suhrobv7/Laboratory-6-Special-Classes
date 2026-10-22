@@ -7,64 +7,64 @@ sealed class Payment {
     data class Crypto(val wallet: String) : Payment()
 }
 
-fun getPaymentChoice(): Payment? {
+fun readPaymentDetails(): Payment? {
     println("1) Credit card   2) PayPal   3) Cash   4) Crypto")
     print("Choose a payment method: ")
-    
+
     return when (readln().trim()) {
         "1" -> {
             print("Card number: ")
-            val numStr = readln().trim()
+            val cardNumber = readln().trim()
             print("Expiry (MM/YY): ")
-            val expStr = readln().trim()
-            Payment.CreditCard(numStr, expStr)
+            val expDate = readln().trim()
+            Payment.CreditCard(cardNumber, expDate)
         }
         "2" -> {
             print("PayPal e-mail: ")
-            val emailAddr = readln().trim()
-            Payment.PayPal(emailAddr)
+            val paypalEmail = readln().trim()
+            Payment.PayPal(paypalEmail)
         }
         "3" -> Payment.Cash
         "4" -> {
             print("Wallet address: ")
-            val cryptoWallet = readln().trim()
-            Payment.Crypto(cryptoWallet)
+            val cryptoAddress = readln().trim()
+            Payment.Crypto(cryptoAddress)
         }
         else -> null
     }
 }
 
-fun processOrderPayment(paymentMethod: Payment, sum: Double) {
-    when (paymentMethod) {
+fun processPaymentRequest(p: Payment, amt: Double) {
+    when (p) {
         is Payment.CreditCard -> {
-            println("Charged $sum to the card ending ${paymentMethod.number.takeLast(4)} (expires ${paymentMethod.expiry})")
+            println("Charged $amt to the card ending ${p.number.takeLast(4)} (expires ${p.expiry})")
         }
         is Payment.PayPal -> {
-            println("Sent a payment request for $sum to ${paymentMethod.email}")
+            println("Sent a payment request for $amt to ${p.email}")
         }
         Payment.Cash -> {
-            println("Please pay $sum in cash at the desk")
+            println("Please pay $amt in cash at the desk")
         }
         is Payment.Crypto -> {
-            println("Waiting for a transfer to wallet ${paymentMethod.wallet}")
+            println("Waiting for a transfer to wallet ${p.wallet}")
         }
     }
 }
 
 fun main() {
     print("Amount to pay: ")
-    val sumVal = readln().trim().toDoubleOrNull()
-    if (sumVal == null) {
+    val amtVal = readln().trim().toDoubleOrNull()
+    if (amtVal == null) {
         println("Invalid amount")
         return
     }
 
-    val selectedPayment = getPaymentChoice()
+    val selectedPayment = readPaymentDetails()
     if (selectedPayment == null) {
         println("Unknown payment method")
         return
     }
 
     println("You chose: $selectedPayment")
-    processOrderPayment(selectedPayment, sumVal)
+    processPaymentRequest(selectedPayment, amtVal)
 }

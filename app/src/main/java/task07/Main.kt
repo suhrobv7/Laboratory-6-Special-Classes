@@ -13,32 +13,31 @@ sealed class ApiResponse {
     data class Error(val message: String) : ApiResponse()
 }
 
-val credMap = mapOf("ali" to "1234", "dilnoza" to "qwerty")
-var loggedInUser: UserData? = null
+val accountsDb = mapOf("ali" to "1234", "dilnoza" to "qwerty")
+var activeUser: UserData? = null
 
-fun executeApiCall(req: ApiRequest): ApiResponse = when (req) {
+fun handleApiRequest(req: ApiRequest): ApiResponse = when (req) {
     is LoginRequest -> {
-        val registeredPass = credMap[req.username]
-        if (registeredPass == req.password) {
-            val displayName = req.username.replaceFirstChar { it.uppercase() }
-            val profile = UserData("u-${req.username}", displayName)
-            loggedInUser = profile
-            ApiResponse.UserSuccess(profile)
+        if (accountsDb[req.username] == req.password) {
+            val formattedName = req.username.replaceFirstChar { it.uppercase() }
+            val user = UserData("u-${req.username}", formattedName)
+            activeUser = user
+            ApiResponse.UserSuccess(user)
         } else {
             ApiResponse.Error("Invalid username or password")
         }
     }
     LogoutRequest -> {
-        val oldUser = loggedInUser
-        loggedInUser = null
-        if (oldUser == null) ApiResponse.NotLoggedIn else ApiResponse.UserSuccess(oldUser)
+        val user = activeUser
+        activeUser = null
+        if (user == null) ApiResponse.NotLoggedIn else ApiResponse.UserSuccess(user)
     }
     is RefreshRequest -> {
         ApiResponse.Error("Refresh is not supported yet")
     }
 }
 
-fun displayResponse(res: ApiResponse) {
+fun printResponse(res: ApiResponse) {
     when (res) {
         is ApiResponse.UserSuccess -> println("OK: ${res.user.name} (${res.user.userId})")
         ApiResponse.NotLoggedIn -> println("Nobody is logged in")
@@ -50,23 +49,22 @@ fun main() {
     println("Commands: login, logout, refresh, exit")
     while (true) {
         print("> ")
-        val rawCommand = readln().trim()
-        when (rawCommand) {
+        when (val cmdStr = readln().trim()) {
             "login" -> {
                 print("Username: ")
-                val uname = readln().trim()
+                val userStr = readln().trim()
                 print("Password: ")
-                val pword = readln().trim()
-                displayResponse(executeApiCall(LoginRequest(uname, pword)))
+                val passStr = readln().trim()
+                printResponse(handleApiRequest(LoginRequest(userStr, passStr)))
             }
-            "logout" -> displayResponse(executeApiCall(LogoutRequest))
+            "logout" -> printResponse(handleApiRequest(LogoutRequest))
             "refresh" -> {
                 print("Token: ")
-                val tokenVal = readln().trim()
-                displayResponse(executeApiCall(RefreshRequest(tokenVal)))
+                val tokStr = readln().trim()
+                printResponse(handleApiRequest(RefreshRequest(tokStr)))
             }
             "exit" -> return
-            else -> println("Unknown command: $rawCommand")
+            else -> println("Unknown command: $cmdStr")
         }
     }
 }

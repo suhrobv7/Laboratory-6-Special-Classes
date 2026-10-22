@@ -7,22 +7,22 @@ sealed class UiState {
     data object Offline : UiState()
 }
 
-val cityTempMap = mapOf("tashkent" to 24, "samarkand" to 22, "bukhara" to 27, "london" to 12)
+val cityData = mapOf("tashkent" to 24, "samarkand" to 22, "bukhara" to 27, "london" to 12)
 
-fun getCityWeather(cityName: String): UiState {
-    val searchKey = cityName.lowercase()
-    if (searchKey == "offline") return UiState.Offline
+fun loadCityWeather(cityName: String): UiState {
+    val key = cityName.lowercase()
+    if (key == "offline") return UiState.Offline
     if (cityName.isBlank()) return UiState.Error("The city name is empty")
-    
-    val temp = cityTempMap[searchKey] ?: return UiState.Error("No data for '$cityName'")
+
+    val temp = cityData[key] ?: return UiState.Error("No data for '$cityName'")
     return UiState.Success(cityName, temp)
 }
 
-fun renderScreen(screenState: UiState) {
-    when (screenState) {
+fun renderUi(uiState: UiState) {
+    when (uiState) {
         UiState.Loading -> println("Loading...")
-        is UiState.Success -> println("${screenState.city}: ${screenState.temperature} C")
-        is UiState.Error -> println("Error: ${screenState.message}")
+        is UiState.Success -> println("${uiState.city}: ${uiState.temperature} C")
+        is UiState.Error -> println("Error: ${uiState.message}")
         UiState.Offline -> println("No internet connection")
     }
 }
@@ -30,11 +30,11 @@ fun renderScreen(screenState: UiState) {
 fun main() {
     while (true) {
         print("City (or 'exit'): ")
-        val inputCity = readln().trim()
-        if (inputCity == "exit") break
-        
-        renderScreen(UiState.Loading)
-        val state = getCityWeather(inputCity)
-        renderScreen(state)
+        val query = readln().trim()
+        if (query == "exit") break
+
+        renderUi(UiState.Loading)
+        val state = loadCityWeather(query)
+        renderUi(state)
     }
 }

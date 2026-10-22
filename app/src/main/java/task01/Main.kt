@@ -3,24 +3,29 @@ package task01
 enum class OrderStatus { NEW, PAID, SHIPPED, DELIVERED, CANCELLED }
 
 fun main() {
-    val statuses = OrderStatus.entries
-    println("Statuses: ${statuses.joinToString()}")
+    val statusEntries = OrderStatus.entries
+    println("Statuses: ${statusEntries.joinToString()}")
     print("Current status of your order: ")
     
-    val enteredText = readln().trim().uppercase()
+    val rawText = readln().trim()
+    val upperText = rawText.uppercase()
 
-    val parsedStatus = try {
-        OrderStatus.valueOf(enteredText)
-    } catch (e: IllegalArgumentException) {
-        println("'$enteredText' is not a status. Valid: ${statuses.map { it.name }}")
+    val currentEnum = try {
+        OrderStatus.valueOf(upperText)
+    } catch (_: IllegalArgumentException) {
+        println("'$upperText' is not a status. Valid: ${statusEntries.map { it.name }}")
         return
     }
 
-    val positionIndex = parsedStatus.ordinal + 1
-    println("You entered ${parsedStatus.name}: step $positionIndex of ${statuses.size}")
-    
-    val hasNext = statuses.getOrNull(parsedStatus.ordinal + 1)
-    println(if (hasNext == null) "This is the last step." else "Next step: $hasNext")
+    val stepIndex = currentEnum.ordinal + 1
+    println("You entered ${currentEnum.name}: step $stepIndex of ${statusEntries.size}")
+
+    val nextStep = statusEntries.getOrNull(currentEnum.ordinal + 1)
+    if (nextStep != null) {
+        println("Next step: $nextStep")
+    } else {
+        println("This is the last step.")
+    }
 
     println(OrderStatus.PAID === OrderStatus.valueOf("PAID"))
 }

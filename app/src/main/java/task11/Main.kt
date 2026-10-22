@@ -9,7 +9,7 @@ data class Headphones(override val batteryHours: Int = 8, override val range: In
 data class SmartLamp(override val range: Int = 30, override val batteryHours: Int = 4) : Wireless, Chargeable
 class Toaster
 
-fun makeDevice(name: String): Any? = when (name.lowercase()) {
+fun createDeviceByName(str: String): Any? = when (str.lowercase()) {
     "phone" -> Phone()
     "headphones" -> Headphones()
     "lamp" -> SmartLamp()
@@ -17,39 +17,39 @@ fun makeDevice(name: String): Any? = when (name.lowercase()) {
     else -> null
 }
 
-fun chargingNote(device: Chargeable): String = when (device) {
+fun getChargeNote(dev: Chargeable): String = when (dev) {
     is Phone -> "Charge the phone every night"
     is Headphones -> "Charge the headphones after 8 hours"
     is SmartLamp -> "Charge the lamp when indicator blinks"
 }
 
 fun main() {
-    val deviceList = mutableListOf<Any>()
+    val devices = mutableListOf<Any>()
     println("Add devices: phone, headphones, lamp, toaster (type 'done' to finish)")
-    
+
     while (true) {
         print("> ")
-        val nameInput = readln().trim()
-        if (nameInput == "done") break
-        
-        val dev = makeDevice(nameInput)
-        if (dev == null) {
-            println("Unknown device")
+        val nameStr = readln().trim()
+        if (nameStr == "done") break
+
+        val created = createDeviceByName(nameStr)
+        if (created != null) {
+            devices.add(created)
         } else {
-            deviceList.add(dev)
+            println("Unknown device")
         }
     }
 
-    for (dev in deviceList) {
-        val specs = mutableListOf<String>()
-        if (dev is Chargeable) specs.add("battery ${dev.batteryHours} h")
-        if (dev is Wireless) specs.add("wireless ${dev.range} m")
-        if (dev is Waterproof) specs.add("waterproof")
-        
-        val desc = if (specs.isEmpty()) "no special abilities" else specs.joinToString()
-        println("${dev::class.simpleName}: $desc")
+    for (device in devices) {
+        val traits = mutableListOf<String>()
+        if (device is Chargeable) traits.add("battery ${device.batteryHours} h")
+        if (device is Wireless) traits.add("wireless ${device.range} m")
+        if (device is Waterproof) traits.add("waterproof")
+
+        val summary = if (traits.isEmpty()) "no special abilities" else traits.joinToString()
+        println("${device::class.simpleName}: $summary")
     }
 
-    val chargeableCount = deviceList.count { it is Chargeable }
-    println("Chargeable devices: $chargeableCount")
+    val totalChargeable = devices.count { it is Chargeable }
+    println("Chargeable devices: $totalChargeable")
 }

@@ -8,39 +8,39 @@ data class Volume(val level: Int) : PlayerCommand
 
 fun parsePlayerCommand(str: String): PlayerCommand? {
     val tokens = str.trim().lowercase().split(" ")
-    val numParam = tokens.getOrNull(1)?.toIntOrNull()
-    
+    val param = tokens.getOrNull(1)?.toIntOrNull()
+
     return when (tokens[0]) {
         "play" -> Basic.PLAY
         "pause" -> Basic.PAUSE
         "stop" -> Basic.STOP
         "mute" -> Basic.MUTE
-        "seek" -> numParam?.let { Seek(it) }
-        "volume" -> numParam?.takeIf { it in 0..100 }?.let { Volume(it) }
+        "seek" -> param?.let { Seek(it) }
+        "volume" -> param?.takeIf { it in 0..100 }?.let { Volume(it) }
         else -> null
     }
 }
 
 class MediaPlayer {
-    private var trackPos = 0
-    private var soundLevel = 50
+    private var position = 0
+    private var volume = 50
 
     fun processCommand(cmd: PlayerCommand) {
         when (cmd) {
-            Basic.PLAY -> println("Playing from ${trackPos}s")
-            Basic.PAUSE -> println("Paused at ${trackPos}s")
+            Basic.PLAY -> println("Playing from ${position}s")
+            Basic.PAUSE -> println("Paused at ${position}s")
             Basic.STOP -> {
-                trackPos = 0
+                position = 0
                 println("Stopped")
             }
             Basic.MUTE -> println("Muted")
             is Seek -> {
-                trackPos = cmd.seconds
-                println("Jumped to ${trackPos}s")
+                position = cmd.seconds
+                println("Jumped to ${position}s")
             }
             is Volume -> {
-                soundLevel = cmd.level
-                println("Volume is now $soundLevel%")
+                volume = cmd.level
+                println("Volume is now $volume%")
             }
         }
     }
@@ -49,17 +49,17 @@ class MediaPlayer {
 fun main() {
     val player = MediaPlayer()
     println("Commands: play, pause, stop, mute, seek N, volume N (0-100), quit")
-    
+
     while (true) {
         print("> ")
-        val line = readln()
-        if (line.trim() == "quit") break
-        
-        val cmd = parsePlayerCommand(line)
-        if (cmd == null) {
-            println("Unknown command")
+        val input = readln()
+        if (input.trim() == "quit") break
+
+        val command = parsePlayerCommand(input)
+        if (command != null) {
+            player.processCommand(command)
         } else {
-            player.processCommand(cmd)
+            println("Unknown command")
         }
     }
 }
