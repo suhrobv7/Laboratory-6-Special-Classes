@@ -3,29 +3,24 @@ package task01
 enum class OrderStatus { NEW, PAID, SHIPPED, DELIVERED, CANCELLED }
 
 fun main() {
-    val allStatuses = OrderStatus.entries
-    println("Statuses: ${allStatuses.joinToString()}")
+    val statuses = OrderStatus.entries
+    println("Statuses: ${statuses.joinToString()}")
     print("Current status of your order: ")
     
-    val inputVal = readln().trim().uppercase()
+    val enteredText = readln().trim().uppercase()
 
-    val currentStatus = try {
-        OrderStatus.valueOf(inputVal)
-    } catch (err: IllegalArgumentException) {
-        println("'$inputVal' is not a status. Valid: ${allStatuses.map { it.name }}")
+    val parsedStatus = try {
+        OrderStatus.valueOf(enteredText)
+    } catch (e: IllegalArgumentException) {
+        println("'$enteredText' is not a status. Valid: ${statuses.map { it.name }}")
         return
     }
 
-    val stepNum = currentStatus.ordinal + 1
-    println("You entered ${currentStatus.name}: step $stepNum of ${allStatuses.size}")
+    val positionIndex = parsedStatus.ordinal + 1
+    println("You entered ${parsedStatus.name}: step $positionIndex of ${statuses.size}")
     
-    val nextStatus = allStatuses.getOrNull(currentStatus.ordinal + 1)
-    if (nextStatus != null) {
-        println("Next step: $nextStatus")
-    } else {
-        println("This is the last step.")
-    }
+    val hasNext = statuses.getOrNull(parsedStatus.ordinal + 1)
+    println(if (hasNext == null) "This is the last step." else "Next step: $hasNext")
 
-    val sameInstance = (OrderStatus.PAID === OrderStatus.valueOf("PAID"))
-    println(sameInstance)
+    println(OrderStatus.PAID === OrderStatus.valueOf("PAID"))
 }

@@ -9,7 +9,7 @@ data class Headphones(override val batteryHours: Int = 8, override val range: In
 data class SmartLamp(override val range: Int = 30, override val batteryHours: Int = 4) : Wireless, Chargeable
 class Toaster
 
-fun instantiateDevice(devName: String): Any? = when (devName.lowercase()) {
+fun makeDevice(name: String): Any? = when (name.lowercase()) {
     "phone" -> Phone()
     "headphones" -> Headphones()
     "lamp" -> SmartLamp()
@@ -17,39 +17,39 @@ fun instantiateDevice(devName: String): Any? = when (devName.lowercase()) {
     else -> null
 }
 
-fun getChargingInstructions(deviceObj: Chargeable): String = when (deviceObj) {
+fun chargingNote(device: Chargeable): String = when (device) {
     is Phone -> "Charge the phone every night"
     is Headphones -> "Charge the headphones after 8 hours"
     is SmartLamp -> "Charge the lamp when indicator blinks"
 }
 
 fun main() {
-    val gadgetList = mutableListOf<Any>()
+    val deviceList = mutableListOf<Any>()
     println("Add devices: phone, headphones, lamp, toaster (type 'done' to finish)")
     
     while (true) {
         print("> ")
-        val inputName = readln().trim()
-        if (inputName == "done") break
+        val nameInput = readln().trim()
+        if (nameInput == "done") break
         
-        val newDev = instantiateDevice(inputName)
-        if (newDev == null) {
+        val dev = makeDevice(nameInput)
+        if (dev == null) {
             println("Unknown device")
         } else {
-            gadgetList.add(newDev)
+            deviceList.add(dev)
         }
     }
 
-    for (item in gadgetList) {
-        val traits = mutableListOf<String>()
-        if (item is Chargeable) traits.add("battery ${item.batteryHours} h")
-        if (item is Wireless) traits.add("wireless ${item.range} m")
-        if (item is Waterproof) traits.add("waterproof")
+    for (dev in deviceList) {
+        val specs = mutableListOf<String>()
+        if (dev is Chargeable) specs.add("battery ${dev.batteryHours} h")
+        if (dev is Wireless) specs.add("wireless ${dev.range} m")
+        if (dev is Waterproof) specs.add("waterproof")
         
-        val traitSummary = if (traits.isEmpty()) "no special abilities" else traits.joinToString()
-        println("${item::class.simpleName}: $traitSummary")
+        val desc = if (specs.isEmpty()) "no special abilities" else specs.joinToString()
+        println("${dev::class.simpleName}: $desc")
     }
 
-    val chargeableTotal = gadgetList.count { it is Chargeable }
-    println("Chargeable devices: $chargeableTotal")
+    val chargeableCount = deviceList.count { it is Chargeable }
+    println("Chargeable devices: $chargeableCount")
 }

@@ -9,40 +9,38 @@ sealed class ValidationError(val field: String, val message: String) {
     protected constructor(code: Int) : this("code", "Error number $code")
 }
 
-fun checkForm(nameVal: String, ageVal: String, emailVal: String): List<ValidationError> {
-    val errList = mutableListOf<ValidationError>()
-    if (nameVal.isBlank()) {
-        errList.add(ValidationError.EmptyName())
+fun validateRegistration(name: String, age: String, email: String): List<ValidationError> {
+    val issueList = mutableListOf<ValidationError>()
+    if (name.isBlank()) {
+        issueList.add(ValidationError.EmptyName())
     }
     
-    val ageParsed = ageVal.toIntOrNull()
-    if (ageParsed == null || ageParsed !in 0..120) {
-        errList.add(ValidationError.InvalidAge(ageVal))
-    } else if (ageParsed < 18) {
-        errList.add(ValidationError.TooYoung())
+    val ageNumber = age.toIntOrNull()
+    if (ageNumber == null || ageNumber !in 0..120) {
+        issueList.add(ValidationError.InvalidAge(age))
+    } else if (ageNumber < 18) {
+        issueList.add(ValidationError.TooYoung())
     }
 
-    if ('@' !in emailVal) {
-        errList.add(ValidationError.BadEmail(emailVal))
+    if ('@' !in email) {
+        issueList.add(ValidationError.BadEmail(email))
     }
     
-    return errList
+    return issueList
 }
 
 fun main() {
     print("Name: ")
-    val nameInput = readln()
+    val name = readln()
     print("Age: ")
-    val ageInput = readln()
+    val age = readln()
     print("E-mail: ")
-    val emailInput = readln()
+    val email = readln()
 
-    val errorsFound = checkForm(nameInput, ageInput, emailInput)
-    if (errorsFound.isEmpty()) {
+    val parsedErrors = validateRegistration(name, age, email)
+    if (parsedErrors.isEmpty()) {
         println("Registration accepted")
     } else {
-        for (err in errorsFound) {
-            println("${err.field}: ${err.message}")
-        }
+        parsedErrors.forEach { println("${it.field}: ${it.message}") }
     }
 }

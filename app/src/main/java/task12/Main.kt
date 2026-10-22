@@ -2,17 +2,17 @@ package task12
 
 class QuotaExceeded(val limit: Int) : CustomError("Quota of $limit exceeded")
 
-fun printReport(errObj: AppError) {
-    val category = when (errObj) {
+fun logError(err: AppError) {
+    val errCategory = when (err) {
         is IoError -> "I/O"
         Timeout -> "timeout"
         is CustomError -> "custom"
     }
-    println("[$category] ${errObj.text}")
+    println("[$errCategory] ${err.text}")
 }
 
-fun parseError(rawLine: String): AppError? {
-    val parts = rawLine.trim().split(" ", limit = 2)
+fun parseAppError(input: String): AppError? {
+    val parts = input.trim().split(" ", limit = 2)
     val arg = parts.getOrElse(1) { "" }
     
     return when (parts[0]) {
@@ -30,14 +30,14 @@ fun main() {
     println("Describe an error: missing PATH, denied PATH, disk MB, timeout, quota N, other TEXT, or end")
     while (true) {
         print("> ")
-        val userStr = readln()
-        if (userStr.trim() == "end") break
+        val input = readln()
+        if (input.trim() == "end") break
         
-        val createdErr = parseError(userStr)
-        if (createdErr != null) {
-            printReport(createdErr)
-        } else {
+        val errorObj = parseAppError(input)
+        if (errorObj == null) {
             println("Unknown error type")
+        } else {
+            logError(errorObj)
         }
     }
 }

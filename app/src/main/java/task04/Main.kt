@@ -6,57 +6,56 @@ sealed class Payment {
     data object Cash : Payment()
 }
 
-fun promptPaymentMethod(): Payment? {
+fun getPaymentChoice(): Payment? {
     println("1) Credit card   2) PayPal   3) Cash")
     print("Choose a payment method: ")
     
     return when (readln().trim()) {
         "1" -> {
             print("Card number: ")
-            val cardNum = readln().trim()
+            val numStr = readln().trim()
             print("Expiry (MM/YY): ")
-            val cardExp = readln().trim()
-            Payment.CreditCard(cardNum, cardExp)
+            val expStr = readln().trim()
+            Payment.CreditCard(numStr, expStr)
         }
         "2" -> {
             print("PayPal e-mail: ")
-            val payEmail = readln().trim()
-            Payment.PayPal(payEmail)
+            val emailAddr = readln().trim()
+            Payment.PayPal(emailAddr)
         }
         "3" -> Payment.Cash
         else -> null
     }
 }
 
-fun executePayment(selectedMethod: Payment, totalAmount: Double) {
-    when (selectedMethod) {
+fun processOrderPayment(paymentMethod: Payment, sum: Double) {
+    when (paymentMethod) {
         is Payment.CreditCard -> {
-            val lastFour = selectedMethod.number.takeLast(4)
-            println("Charged $totalAmount to the card ending $lastFour (expires ${selectedMethod.expiry})")
+            println("Charged $sum to the card ending ${paymentMethod.number.takeLast(4)} (expires ${paymentMethod.expiry})")
         }
         is Payment.PayPal -> {
-            println("Sent a payment request for $totalAmount to ${selectedMethod.email}")
+            println("Sent a payment request for $sum to ${paymentMethod.email}")
         }
         Payment.Cash -> {
-            println("Please pay $totalAmount in cash at the desk")
+            println("Please pay $sum in cash at the desk")
         }
     }
 }
 
 fun main() {
     print("Amount to pay: ")
-    val amountVal = readln().trim().toDoubleOrNull()
-    if (amountVal == null) {
+    val sumVal = readln().trim().toDoubleOrNull()
+    if (sumVal == null) {
         println("Invalid amount")
         return
     }
 
-    val chosenPayment = promptPaymentMethod()
-    if (chosenPayment == null) {
+    val selectedPayment = getPaymentChoice()
+    if (selectedPayment == null) {
         println("Unknown payment method")
         return
     }
 
-    println("You chose: $chosenPayment")
-    executePayment(chosenPayment, amountVal)
+    println("You chose: $selectedPayment")
+    processOrderPayment(selectedPayment, sumVal)
 }
