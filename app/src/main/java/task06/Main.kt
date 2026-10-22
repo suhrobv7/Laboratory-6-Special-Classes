@@ -7,21 +7,22 @@ sealed class UiState {
     data object Offline : UiState()
 }
 
-val temperatures = mapOf("tashkent" to 24, "samarkand" to 22, "bukhara" to 27, "london" to 12)
+val weatherDatabase = mapOf("tashkent" to 24, "samarkand" to 22, "bukhara" to 27, "london" to 12)
 
-fun loadWeather(city: String): UiState {
-    if (city.lowercase() == "offline") return UiState.Offline
-    if (city.isBlank()) return UiState.Error("The city name is empty")
-    val temperature = temperatures[city.lowercase()]
-        ?: return UiState.Error("No data for '$city'")
-    return UiState.Success(city, temperature)
+fun fetchWeather(cityName: String): UiState {
+    val key = cityName.lowercase()
+    if (key == "offline") return UiState.Offline
+    if (cityName.isBlank()) return UiState.Error("The city name is empty")
+    
+    val tempVal = weatherDatabase[key] ?: return UiState.Error("No data for '$cityName'")
+    return UiState.Success(cityName, tempVal)
 }
 
-fun render(state: UiState) {
-    when (state) {
+fun displayState(currentState: UiState) {
+    when (currentState) {
         UiState.Loading -> println("Loading...")
-        is UiState.Success -> println("${state.city}: ${state.temperature} C")
-        is UiState.Error -> println("Error: ${state.message}")
+        is UiState.Success -> println("${currentState.city}: ${currentState.temperature} C")
+        is UiState.Error -> println("Error: ${currentState.message}")
         UiState.Offline -> println("No internet connection")
     }
 }
@@ -29,9 +30,11 @@ fun render(state: UiState) {
 fun main() {
     while (true) {
         print("City (or 'exit'): ")
-        val city = readln().trim()
-        if (city == "exit") break
-        render(UiState.Loading)
-        render(loadWeather(city))
+        val userQuery = readln().trim()
+        if (userQuery == "exit") break
+        
+        displayState(UiState.Loading)
+        val resultState = fetchWeather(userQuery)
+        displayState(resultState)
     }
 }

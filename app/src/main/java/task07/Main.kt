@@ -13,35 +13,36 @@ sealed class ApiResponse {
     data class Error(val message: String) : ApiResponse()
 }
 
-val accounts = mapOf("ali" to "1234", "dilnoza" to "qwerty")
-var currentUser: UserData? = null
+val userAccounts = mapOf("ali" to "1234", "dilnoza" to "qwerty")
+var activeUser: UserData? = null
 
-fun handleRequest(request: ApiRequest): ApiResponse = when (request) {
+fun processRequest(req: ApiRequest): ApiResponse = when (req) {
     is LoginRequest -> {
-        if (accounts[request.username] == request.password) {
-            val name = request.username.replaceFirstChar { it.uppercase() }
-            val user = UserData("u-${request.username}", name)
-            currentUser = user
-            ApiResponse.UserSuccess(user)
+        val expectedPass = userAccounts[req.username]
+        if (expectedPass != null && expectedPass == req.password) {
+            val formattedName = req.username.replaceFirstChar { it.uppercase() }
+            val profile = UserData("u-${req.username}", formattedName)
+            activeUser = profile
+            ApiResponse.UserSuccess(profile)
         } else {
             ApiResponse.Error("Invalid username or password")
         }
     }
     LogoutRequest -> {
-        val user = currentUser
-        currentUser = null
-        if (user == null) ApiResponse.NotLoggedIn else ApiResponse.UserSuccess(user)
+        val prevUser = activeUser
+        activeUser = null
+        if (prevUser == null) ApiResponse.NotLoggedIn else ApiResponse.UserSuccess(prevUser)
     }
     is RefreshRequest -> {
         ApiResponse.Error("Refresh is not supported yet")
     }
 }
 
-fun show(response: ApiResponse) {
-    when (response) {
-        is ApiResponse.UserSuccess -> println("OK: ${response.user.name} (${response.user.userId})")
+fun renderResponse(res: ApiResponse) {
+    when (res) {
+        is ApiResponse.UserSuccess -> println("OK: ${res.user.name} (${res.user.userId})")
         ApiResponse.NotLoggedIn -> println("Nobody is logged in")
-        is ApiResponse.Error -> println("FAILED: ${response.message}")
+        is ApiResponse.Error -> println("FAILED: ${res.message}")
     }
 }
 
@@ -49,22 +50,23 @@ fun main() {
     println("Commands: login, logout, refresh, exit")
     while (true) {
         print("> ")
-        when (val cmd = readln().trim()) {
+        val command = readln().trim()
+        when (command) {
             "login" -> {
                 print("Username: ")
-                val username = readln().trim()
+                val uname = readln().trim()
                 print("Password: ")
-                val password = readln().trim()
-                show(handleRequest(LoginRequest(username, password)))
+                val pass = readln().trim()
+                renderResponse(processRequest(LoginRequest(uname, pass)))
             }
-            "logout" -> show(handleRequest(LogoutRequest))
+            "logout" -> renderResponse(processRequest(LogoutRequest))
             "refresh" -> {
                 print("Token: ")
-                val token = readln().trim()
-                show(handleRequest(RefreshRequest(token)))
+                val tok = readln().trim()
+                renderResponse(processRequest(RefreshRequest(tok)))
             }
             "exit" -> return
-            else -> println("Unknown command: $cmd")
+            else -> println("Unknown command: $command")
         }
     }
 }

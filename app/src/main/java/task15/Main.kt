@@ -14,70 +14,70 @@ class Ticket(val id: Int, val title: String, val priority: Priority) {
     val comments = mutableListOf<String>()
 }
 
-val tickets = mutableListOf<Ticket>()
+val ticketRepository = mutableListOf<Ticket>()
 
-fun parse(line: String): Action? {
-    val parts = line.trim().split(" ", limit = 3)
-    return when (parts[0].lowercase()) {
+fun parseActionCommand(inputLine: String): Action? {
+    val tokens = inputLine.trim().split(" ", limit = 3)
+    return when (tokens[0].lowercase()) {
         "open" -> {
-            val priority = Priority.entries.firstOrNull {
-                it.name.equals(parts.getOrNull(1), ignoreCase = true)
+            val prio = Priority.entries.find {
+                it.name.equals(tokens.getOrNull(1), ignoreCase = true)
             }
-            val title = parts.getOrNull(2)
-            if (priority == null || title.isNullOrBlank()) null else Open(title, priority)
+            val titleText = tokens.getOrNull(2)
+            if (prio == null || titleText.isNullOrBlank()) null else Open(titleText, prio)
         }
-        "close" -> parts.getOrNull(1)?.toIntOrNull()?.let { Close(it) }
-        "reopen" -> parts.getOrNull(1)?.toIntOrNull()?.let { Reopen(it) }
+        "close" -> tokens.getOrNull(1)?.toIntOrNull()?.let { Close(it) }
+        "reopen" -> tokens.getOrNull(1)?.toIntOrNull()?.let { Reopen(it) }
         "comment" -> {
-            val id = parts.getOrNull(1)?.toIntOrNull()
-            val text = parts.getOrNull(2)
-            if (id == null || text.isNullOrBlank()) null else Comment(id, text)
+            val ticketId = tokens.getOrNull(1)?.toIntOrNull()
+            val commentText = tokens.getOrNull(2)
+            if (ticketId == null || commentText.isNullOrBlank()) null else Comment(ticketId, commentText)
         }
         "list" -> ListAll
         else -> null
     }
 }
 
-fun execute(action: Action) {
-    when (action) {
+fun processTicketAction(act: Action) {
+    when (act) {
         is Open -> {
-            val ticket = Ticket(tickets.size + 1, action.title, action.priority)
-            tickets.add(ticket)
-            println("Opened #${ticket.id}: ${ticket.title} [${ticket.priority}]")
+            val newTicket = Ticket(ticketRepository.size + 1, act.title, act.priority)
+            ticketRepository.add(newTicket)
+            println("Opened #${newTicket.id}: ${newTicket.title} [${newTicket.priority}]")
         }
         is Close -> {
-            val ticket = tickets.find { it.id == action.id }
-            if (ticket == null) {
-                println("There is no ticket #${action.id}")
+            val target = ticketRepository.find { it.id == act.id }
+            if (target == null) {
+                println("There is no ticket #${act.id}")
             } else {
-                ticket.isOpen = false
-                println("Closed #${ticket.id}")
+                target.isOpen = false
+                println("Closed #${target.id}")
             }
         }
         is Reopen -> {
-            val ticket = tickets.find { it.id == action.id }
-            if (ticket == null) {
-                println("There is no ticket #${action.id}")
+            val target = ticketRepository.find { it.id == act.id }
+            if (target == null) {
+                println("There is no ticket #${act.id}")
             } else {
-                ticket.isOpen = true
-                println("Reopened #${ticket.id}")
+                target.isOpen = true
+                println("Reopened #${target.id}")
             }
         }
         is Comment -> {
-            val ticket = tickets.find { it.id == action.id }
-            if (ticket == null) {
-                println("There is no ticket #${action.id}")
+            val target = ticketRepository.find { it.id == act.id }
+            if (target == null) {
+                println("There is no ticket #${act.id}")
             } else {
-                ticket.comments.add(action.text)
-                println("Comment added to #${ticket.id} (${ticket.comments.size} in total)")
+                target.comments.add(act.text)
+                println("Comment added to #${target.id} (${target.comments.size} in total)")
             }
         }
         ListAll -> {
-            for (ticket in tickets.sortedByDescending { it.priority }) {
-                val state = if (ticket.isOpen) "open  " else "closed"
-                println("#${ticket.id} $state [${ticket.priority}] ${ticket.title}")
+            for (item in ticketRepository.sortedByDescending { it.priority }) {
+                val statusTag = if (item.isOpen) "open  " else "closed"
+                println("#${item.id} $statusTag [${item.priority}] ${item.title}")
             }
-            println("Open tickets: ${tickets.count { it.isOpen }}")
+            println("Open tickets: ${ticketRepository.count { it.isOpen }}")
         }
     }
 }
@@ -85,11 +85,17 @@ fun execute(action: Action) {
 fun main() {
     println("Commands: open PRIORITY TITLE, close ID, reopen ID, comment ID TEXT, list, exit")
     println("Priorities: ${Priority.entries.joinToString()}")
+    
     while (true) {
         print("> ")
-        val line = readln()
-        if (line.trim() == "exit") break
-        val action = parse(line)
-        if (action == null) println("I do not understand that") else execute(action)
+        val rawInput = readln()
+        if (rawInput.trim() == "exit") break
+        
+        val parsedAction = parseActionCommand(rawInput)
+        if (parsedAction != null) {
+            processTicketAction(parsedAction)
+        } else {
+            println("I do not understand that")
+        }
     }
 }

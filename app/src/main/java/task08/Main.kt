@@ -6,34 +6,43 @@ sealed class ValidationError(val field: String, val message: String) {
     class TooYoung : ValidationError("age", "You must be 18 or older")
     class BadEmail(text: String) : ValidationError("email", "'$text' is not an e-mail address")
 
-    // Task test constructor
     protected constructor(code: Int) : this("code", "Error number $code")
 }
 
-fun validate(name: String, age: String, email: String): List<ValidationError> {
-    val errors = mutableListOf<ValidationError>()
-    if (name.isBlank()) errors.add(ValidationError.EmptyName())
-    val ageNum = age.toIntOrNull()
-    if (ageNum == null || ageNum !in 0..120) {
-        errors.add(ValidationError.InvalidAge(age))
-    } else if (ageNum < 18) {
-        errors.add(ValidationError.TooYoung())
+fun checkForm(nameVal: String, ageVal: String, emailVal: String): List<ValidationError> {
+    val errList = mutableListOf<ValidationError>()
+    if (nameVal.isBlank()) {
+        errList.add(ValidationError.EmptyName())
     }
-    if ('@' !in email) errors.add(ValidationError.BadEmail(email))
-    return errors
+    
+    val ageParsed = ageVal.toIntOrNull()
+    if (ageParsed == null || ageParsed !in 0..120) {
+        errList.add(ValidationError.InvalidAge(ageVal))
+    } else if (ageParsed < 18) {
+        errList.add(ValidationError.TooYoung())
+    }
+
+    if ('@' !in emailVal) {
+        errList.add(ValidationError.BadEmail(emailVal))
+    }
+    
+    return errList
 }
 
 fun main() {
     print("Name: ")
-    val name = readln()
+    val nameInput = readln()
     print("Age: ")
-    val age = readln()
+    val ageInput = readln()
     print("E-mail: ")
-    val email = readln()
-    val errors = validate(name, age, email)
-    if (errors.isEmpty()) {
+    val emailInput = readln()
+
+    val errorsFound = checkForm(nameInput, ageInput, emailInput)
+    if (errorsFound.isEmpty()) {
         println("Registration accepted")
     } else {
-        errors.forEach { println("${it.field}: ${it.message}") }
+        for (err in errorsFound) {
+            println("${err.field}: ${err.message}")
+        }
     }
 }

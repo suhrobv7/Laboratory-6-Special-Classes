@@ -4,49 +4,56 @@ import kotlin.math.pow
 
 enum class Operation(val symbol: String) {
     ADD("+") {
-        override fun apply(a: Double, b: Double) = a + b
+        override fun apply(x: Double, y: Double) = x + y
     },
     SUBTRACT("-") {
-        override fun apply(a: Double, b: Double) = a - b
+        override fun apply(x: Double, y: Double) = x - y
     },
     MULTIPLY("*") {
-        override fun apply(a: Double, b: Double) = a * b
+        override fun apply(x: Double, y: Double) = x * y
     },
     DIVIDE("/") {
-        override fun apply(a: Double, b: Double) = a / b
+        override fun apply(x: Double, y: Double) = x / y
     },
     MODULO("%") {
-        override fun apply(a: Double, b: Double) = a % b
+        override fun apply(x: Double, y: Double) = x % y
     },
     POWER("^") {
-        override fun apply(a: Double, b: Double) = a.pow(b)
+        override fun apply(x: Double, y: Double) = x.pow(y)
     };
 
-    abstract fun apply(a: Double, b: Double): Double
+    abstract fun apply(x: Double, y: Double): Double
 
     companion object {
-        fun fromSymbol(symbol: String): Operation? =
-            entries.firstOrNull { it.symbol == symbol }
+        fun fromSymbol(sym: String): Operation? =
+            entries.find { it.symbol == sym }
     }
 }
 
 fun main() {
     print("Expression (for example 12 * 4): ")
-    val parts = readln().trim().split(" ")
-    if (parts.size != 3) {
+    val rawInput = readln().trim()
+    val tokens = rawInput.split(" ")
+    
+    if (tokens.size != 3) {
         println("Use: number operator number")
         return
     }
-    val a = parts[0].toDoubleOrNull()
-    val b = parts[2].toDoubleOrNull()
-    val operation = Operation.fromSymbol(parts[1])
-    if (a == null || b == null || operation == null) {
-        println("Cannot understand '${parts.joinToString(" ")}'")
+
+    val num1 = tokens[0].toDoubleOrNull()
+    val num2 = tokens[2].toDoubleOrNull()
+    val op = Operation.fromSymbol(tokens[1])
+
+    if (num1 == null || num2 == null || op == null) {
+        println("Cannot understand '$rawInput'")
         return
     }
-    if (operation == Operation.DIVIDE && b == 0.0) {
+
+    if (op == Operation.DIVIDE && num2 == 0.0) {
         println("Division by zero")
         return
     }
-    println("$a ${operation.symbol} $b = ${operation.apply(a, b)}")
+
+    val result = op.apply(num1, num2)
+    println("$num1 ${op.symbol} $num2 = $result")
 }

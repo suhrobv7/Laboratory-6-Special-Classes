@@ -2,27 +2,33 @@ package task03
 
 enum class Delivery { PICKUP, COURIER, EXPRESS, DRONE }
 
-fun shippingCost(type: Delivery, weightKg: Double): Double = when (type) {
+fun calculateDeliveryFee(method: Delivery, weight: Double): Double = when (method) {
     Delivery.PICKUP -> 0.0
-    Delivery.COURIER -> 15_000 + 2_000 * weightKg
-    Delivery.EXPRESS -> 40_000 + 5_000 * weightKg
-    Delivery.DRONE -> 25_000 + 3_000 * weightKg
+    Delivery.COURIER -> 15_000.0 + 2_000.0 * weight
+    Delivery.EXPRESS -> 40_000.0 + 5_000.0 * weight
+    Delivery.DRONE -> 25_000.0 + 3_000.0 * weight
 }
 
 fun main() {
-    println("Delivery types: ${Delivery.entries.joinToString()}")
+    val availableTypes = Delivery.entries
+    println("Delivery types: ${availableTypes.joinToString()}")
+    
     print("Delivery type: ")
-    val typeName = readln().trim()
-    val type = Delivery.entries.firstOrNull { it.name.equals(typeName, ignoreCase = true) }
-    if (type == null) {
+    val typeInput = readln().trim()
+    val selectedType = availableTypes.find { it.name.equals(typeInput, ignoreCase = true) }
+    
+    if (selectedType == null) {
         println("Unknown delivery type")
         return
     }
+
     print("Weight in kg: ")
-    val weight = readln().trim().toDoubleOrNull()
-    if (weight == null || weight < 0) {
+    val weightVal = readln().trim().toDoubleOrNull()
+    if (weightVal == null || weightVal < 0) {
         println("Invalid weight")
         return
     }
-    println("Shipping cost: ${"%.0f".format(shippingCost(type, weight))} UZS")
+
+    val totalFee = calculateDeliveryFee(selectedType, weightVal)
+    println("Shipping cost: ${"%.0f".format(totalFee)} UZS")
 }

@@ -5,42 +5,45 @@ sealed interface Outcome<out T> {
     data class Fail(val reason: String) : Outcome<Nothing>
 }
 
-fun parseQuantity(text: String): Outcome<Int> {
-    val number = text.trim().toIntOrNull()
-        ?: return Outcome.Fail("'$text' is not a whole number")
-    if (number <= 0) return Outcome.Fail("The quantity must be positive")
-    if (number > 100) return Outcome.Fail("We cannot sell more than 100 at once")
-    return Outcome.Ok(number)
+fun parseQuantityVal(inputStr: String): Outcome<Int> {
+    val qtyVal = inputStr.trim().toIntOrNull()
+        ?: return Outcome.Fail("'$inputStr' is not a whole number")
+    if (qtyVal <= 0) return Outcome.Fail("The quantity must be positive")
+    if (qtyVal > 100) return Outcome.Fail("We cannot sell more than 100 at once")
+    return Outcome.Ok(qtyVal)
 }
 
-fun parsePrice(text: String): Outcome<Double> {
-    val price = text.trim().toDoubleOrNull()
-        ?: return Outcome.Fail("'$text' is not a price")
-    if (price <= 0.0) return Outcome.Fail("The price must be positive")
-    return Outcome.Ok(price)
+fun parsePriceVal(inputStr: String): Outcome<Double> {
+    val priceVal = inputStr.trim().toDoubleOrNull()
+        ?: return Outcome.Fail("'$inputStr' is not a price")
+    if (priceVal <= 0.0) return Outcome.Fail("The price must be positive")
+    return Outcome.Ok(priceVal)
 }
 
-fun parseEmail(text: String): Outcome<String> {
-    val email = text.trim()
-    if ('@' !in email) return Outcome.Fail("'$email' is not a valid e-mail address")
-    return Outcome.Ok(email)
+fun parseEmailVal(inputStr: String): Outcome<String> {
+    val emailStr = inputStr.trim()
+    if ('@' !in emailStr) return Outcome.Fail("'$emailStr' is not a valid e-mail address")
+    return Outcome.Ok(emailStr)
 }
 
 fun main() {
     print("Quantity: ")
-    val quantity = parseQuantity(readln())
+    val qtyResult = parseQuantityVal(readln())
     print("Unit price: ")
-    val price = parsePrice(readln())
+    val priceResult = parsePriceVal(readln())
     print("E-mail: ")
-    val email = parseEmail(readln())
+    val emailResult = parseEmailVal(readln())
 
-    when (quantity) {
-        is Outcome.Fail -> println("Quantity error: ${quantity.reason}")
-        is Outcome.Ok -> when (price) {
-            is Outcome.Fail -> println("Price error: ${price.reason}")
-            is Outcome.Ok -> when (email) {
-                is Outcome.Fail -> println("Email error: ${email.reason}")
-                is Outcome.Ok -> println("Total: ${quantity.value * price.value}, notification sent to ${email.value}")
+    when (qtyResult) {
+        is Outcome.Fail -> println("Quantity error: ${qtyResult.reason}")
+        is Outcome.Ok -> when (priceResult) {
+            is Outcome.Fail -> println("Price error: ${priceResult.reason}")
+            is Outcome.Ok -> when (emailResult) {
+                is Outcome.Fail -> println("Email error: ${emailResult.reason}")
+                is Outcome.Ok -> {
+                    val totalCost = qtyResult.value * priceResult.value
+                    println("Total: $totalCost, notification sent to ${emailResult.value}")
+                }
             }
         }
     }
